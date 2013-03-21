@@ -1,0 +1,37 @@
+#chat .messages {
+	border: 1px solid #DDD;
+	padding: 10px;
+	background-color: #FFF;
+	height: 250px;
+	overflow-y: scroll;
+	-webkit-border-radius: 3px;
+	   -moz-border-radius: 3px;
+	        border-radius: 3px;
+}
+#chat #messages {
+	padding: 0;
+	margin: 0;
+}
+#chat #messages li {
+	border-bottom: 1px solid #DDD;
+	list-style-type: none;
+	padding: 3px 0;
+}
+#chat .time {
+	color: #BBB;
+	font-weight: bold;
+	margin-right: 5px;
+}
+#chat .username {
+	font-weight: bold;
+	margin-right: 5px;
+}
+#chat .message {
+
+}
+#chat .add-message {
+	margin-top: 5px;
+}
+#chat .add-message form {
+	margin: 0;
+}

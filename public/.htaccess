@@ -1,0 +1,12 @@
+RewriteEngine On
+RewriteBase /
+Options +FollowSymlinks
+
+# Remove trailing slash
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)/$ $1 [L,R=301]
+
+# Route through index.php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
