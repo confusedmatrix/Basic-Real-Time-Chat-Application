@@ -26,15 +26,21 @@ var Chat = (function () {
                 updateMessages(JSON.parse(xhr.responseText));
                 message_area.scrollTop = message_area.scrollHeight;
                 t = parseInt(Date.now() / 1000, 10);
+                clearTimeout(timeout);
                 getMessages(t);
 
                 return true;
             }
         };
-        xhr.timeout = 30*1000;
+
         xhr.open('GET', '/messages?time=' + t, true);
-        xhr.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.send();
+        var timeout = setTimeout(function() {
+            xhr.abort();
+            t = parseInt(Date.now() / 1000, 10);
+            getMessages(t);
+        }, 30000);
     }
 
     function addMessage(username, message) {
