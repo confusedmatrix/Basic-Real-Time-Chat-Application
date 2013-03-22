@@ -46,10 +46,10 @@ class Messages extends Model {
      */
     public function getMessagesAsJSON() {
 
-        $time = intval($_GET['time']);
+        $time = intval($_GET['time']);  
 
         // do not return unless new message is available
-    	while(!$this->checkNewMessages($time)) usleep(10000); // sleep 1/100 second
+    	while(!$this->checkNewMessages($time) && time() > ($_GET['time'] + 35)) usleep(10000); // sleep 1/100 second
 
     	$cursor = $this->messages->find(array('timestamp' => array('$gt' => $time)));
         
@@ -57,6 +57,7 @@ class Messages extends Model {
         while ($cursor->hasNext())
             $data[] = $cursor->getNext();
 
+        $this->database->closeConnection();
         return json_encode($data);
 
     }

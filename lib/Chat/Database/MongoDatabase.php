@@ -177,10 +177,12 @@ class MongoDatabase {
      * @access private
      * @return void
      */
-    private function closeConnection() {
+    public function closeConnection() {
     
-        if (is_object($this->dbh))
+        if (is_object($this->dbh)) {
+            $this->dbh->close;
             $this->dbh = NULL;
+        }
     
     }
 
