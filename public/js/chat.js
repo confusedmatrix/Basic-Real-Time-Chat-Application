@@ -2,7 +2,7 @@ var Chat = (function () {
     var form = document.getElementById('form');
     var message_area = document.getElementById('message-area');
     var messages_ul;
-    var t = 0;
+    var last = 0;
 
 	function createXHR() {
         var client;
@@ -19,27 +19,28 @@ var Chat = (function () {
         return client;
     }
 
-    function getMessages(t) {
+    function getMessages(last) {
         var xhr = createXHR();
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                updateMessages(JSON.parse(xhr.responseText));
+                data = JSON.parse(xhr.responseText);
+                updateMessages(data.messages);
                 message_area.scrollTop = message_area.scrollHeight;
-                t = parseInt(Date.now() / 1000, 10);
+
+                last = data.last;
                 clearTimeout(timeout);
-                getMessages(t);
+                getMessages(last);
 
                 return true;
             }
         };
 
-        xhr.open('GET', '/messages?time=' + t, true);
+        xhr.open('GET', '/messages?last=' + last, true);
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.send();
         var timeout = setTimeout(function() {
             xhr.abort();
-            t = parseInt(Date.now() / 1000, 10);
-            getMessages(t);
+            getMessages(last);
         }, 30000);
     }
 
@@ -104,7 +105,7 @@ var Chat = (function () {
         messages_ul = document.createElement('ul');
         messages_ul.id = 'messages';
         message_area.appendChild(messages_ul);
-        getMessages(t);
+        getMessages(last);
     }
 
     return init();

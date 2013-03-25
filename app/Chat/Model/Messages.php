@@ -29,13 +29,33 @@ class Messages extends Model {
 
         // drop collection if last message is older than 24 hours old.
         $message = $this->messages->find()->sort(array('_id' => -1))->limit(1)->getNext();
-        if ($message['timestamp'] < (time() - 86400)) {
+        if (!empty($message) && $message['timestamp'] < (time() - 86400)) {
 
             $this->messages->drop();
             return false;
 
         }
 
+    }
+
+    /**
+     * buildQuery function.
+     * 
+     * @access public
+     * @param $last_id
+     * @return mixed
+     */
+    private function buildQuery($last_id) {
+
+        $query = array();
+        if ($last_id != 0) {
+            
+            $id = new \MongoID($last_id);
+            $query = array('_id' => array('$gt' => $id));
+
+        }
+
+        return $query;
     }
 
     /**
@@ -46,16 +66,21 @@ class Messages extends Model {
      */
     public function getMessagesAsJSON() {
 
-        $time = intval($_GET['time']);  
+        $last_id = $_GET['last'];
+        $t = time();
 
         // do not return unless new message is available
-    	while(!$this->checkNewMessages($time) && time() > ($_GET['time'] + 35)) usleep(10000); // sleep 1/100 second
+    	while(!$this->checkForNewMessages($last_id) && ($t + 35) > time()) usleep(10000); // sleep 1/100 second
 
-    	$cursor = $this->messages->find(array('timestamp' => array('$gt' => $time)));
+        $query = $this->buildQuery($last_id);
+        $cursor = $this->messages->find($query);
         
         $data = array();
         while ($cursor->hasNext())
-            $data[] = $cursor->getNext();
+            $data['messages'][] = $cursor->getNext();
+
+        $c = count($data['messages']);
+        $data['last'] = $data['messages'][($c - 1)]['_id']->{'$id'};
 
         $this->database->closeConnection();
         return json_encode($data);
@@ -63,15 +88,16 @@ class Messages extends Model {
     }
 
     /**
-     * checkNewMessages function.
+     * checkForNewMessages function.
      * 
      * @access private
-     * @param mixed $time
+     * @param mixed $last_id
      * @return boolean
      */
-	private function checkNewMessages($time) {
+	private function checkForNewMessages($last_id) {
 
-        $count = $this->messages->find(array('timestamp' => array('$gt' => $time)))->count();
+        $query = $this->buildQuery($last_id);
+        $count = $this->messages->find($query)->count();
 		if ($count >= 1) return true;
 
 		return false;
